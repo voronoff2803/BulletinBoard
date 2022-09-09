@@ -22,7 +22,7 @@ import UIKit
 @objc public final class BLTNItemManager: NSObject {
 
     /// Bulletin view controller.
-    fileprivate var bulletinController: BulletinViewController!
+    fileprivate var bulletinController: BulletinViewController?
 
     // MARK: - Background
 
@@ -175,13 +175,13 @@ extension BLTNItemManager {
         assertIsMainThread()
 
         bulletinController = BulletinViewController()
-        bulletinController.manager = self
+        bulletinController?.manager = self
 
-        bulletinController.modalPresentationStyle = .overFullScreen
-        bulletinController.transitioningDelegate = bulletinController
-        bulletinController.loadBackgroundView()
-        bulletinController.setNeedsStatusBarAppearanceUpdate()
-        bulletinController.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        bulletinController?.modalPresentationStyle = .overFullScreen
+        bulletinController?.transitioningDelegate = bulletinController
+        bulletinController?.loadBackgroundView()
+        bulletinController?.setNeedsStatusBarAppearanceUpdate()
+        bulletinController?.setNeedsUpdateOfHomeIndicatorAutoHidden()
         
         isPrepared = true
         isPreparing = true
@@ -207,7 +207,7 @@ extension BLTNItemManager {
     @objc(presentViewControllerAboveBulletin:animated:completion:)
     public func present(_ viewController: UIViewController, animated: Bool, completion: (() -> Void)? = nil) {
         assertIsPrepared()
-        self.bulletinController.present(viewController, animated: animated, completion: completion)
+        self.bulletinController?.present(viewController, animated: animated, completion: completion)
     }
 
     /**
@@ -230,10 +230,10 @@ extension BLTNItemManager {
         assertIsPrepared()
         assertIsMainThread()
 
-        let contentView = bulletinController.contentView
+        let contentView = bulletinController?.contentView
         let initialRetainCount = CFGetRetainCount(contentView)
 
-        let result = try transform(bulletinController.contentView)
+        let result = try transform(bulletinController!.contentView)
         let finalRetainCount = CFGetRetainCount(contentView)
 
         precondition(initialRetainCount == finalRetainCount,
@@ -264,7 +264,7 @@ extension BLTNItemManager {
         shouldDisplayActivityIndicator = true
         lastActivityIndicatorColor = color ?? defaultActivityIndicatorColor
 
-        bulletinController.displayActivityIndicator(color: lastActivityIndicatorColor)
+        bulletinController?.displayActivityIndicator(color: lastActivityIndicatorColor)
     }
 
     /// Provides a default color for activity indicator views.
@@ -290,7 +290,7 @@ extension BLTNItemManager {
         assertIsMainThread()
 
         shouldDisplayActivityIndicator = false
-        bulletinController.swipeInteractionController?.cancelIfNeeded()
+        bulletinController?.swipeInteractionController?.cancelIfNeeded()
         refreshCurrentItemInterface(elementsChanged: false)
 
     }
@@ -439,21 +439,21 @@ extension BLTNItemManager {
 
         self.prepare()
 
-        let isDetached = bulletinController.presentingViewController == nil
+        let isDetached = bulletinController?.presentingViewController == nil
         assert(isDetached, "Attempt to present a Bulletin that is already presented.")
 
         assertIsPrepared()
         assertIsMainThread()
-        bulletinController.loadView()
+        bulletinController?.loadView()
 
         let refreshActivityIndicator = shouldDisplayActivityIndicator && isDetached
 
         if refreshActivityIndicator {
-            bulletinController.displayActivityIndicator(color: lastActivityIndicatorColor)
+            bulletinController?.displayActivityIndicator(color: lastActivityIndicatorColor)
         }
 
-        bulletinController.modalPresentationCapturesStatusBarAppearance = true
-        presentingVC.present(bulletinController, animated: animated, completion: completion)
+        bulletinController?.modalPresentationCapturesStatusBarAppearance = true
+        presentingVC.present(bulletinController!, animated: animated, completion: completion)
 
     }
     
@@ -504,7 +504,7 @@ extension BLTNItemManager {
         currentItem.tearDown()
         currentItem.manager = nil
 
-        bulletinController.dismiss(animated: animated) {
+        bulletinController?.dismiss(animated: animated) {
             self.completeDismissal()
         }
 
@@ -520,17 +520,17 @@ extension BLTNItemManager {
 
         currentItem.onDismiss()
 
-        for arrangedSubview in bulletinController.contentStackView.arrangedSubviews {
-            bulletinController.contentStackView.removeArrangedSubview(arrangedSubview)
+        for arrangedSubview in bulletinController?.contentStackView.arrangedSubviews ?? []{
+            bulletinController?.contentStackView.removeArrangedSubview(arrangedSubview)
             arrangedSubview.removeFromSuperview()
         }
         
         presentingWindow?.isHidden = true
         presentingWindow = nil
 
-        bulletinController.backgroundView = nil
-        bulletinController.manager = nil
-        bulletinController.transitioningDelegate = nil
+        bulletinController?.backgroundView = nil
+        bulletinController?.manager = nil
+        bulletinController?.transitioningDelegate = nil
 
         bulletinController = nil
 
@@ -552,17 +552,17 @@ extension BLTNItemManager {
     /// Refreshes the interface for the current item.
     fileprivate func refreshCurrentItemInterface(elementsChanged: Bool = true) {
 
-        bulletinController.isDismissable = false
-        bulletinController.swipeInteractionController?.cancelIfNeeded()
-        bulletinController.refreshSwipeInteractionController()
+        bulletinController?.isDismissable = false
+        bulletinController?.swipeInteractionController?.cancelIfNeeded()
+        bulletinController?.refreshSwipeInteractionController()
 
         let showActivityIndicator = self.shouldDisplayActivityIndicator
         let contentAlpha: CGFloat =  showActivityIndicator ? 0 : 1
 
         // Tear down old item
 
-        let oldArrangedSubviews = bulletinController.contentStackView.arrangedSubviews
-        let oldHideableArrangedSubviews = recursiveArrangedSubviews(in: oldArrangedSubviews)
+        let oldArrangedSubviews = bulletinController?.contentStackView.arrangedSubviews
+        let oldHideableArrangedSubviews = recursiveArrangedSubviews(in: oldArrangedSubviews ?? [])
 
         if elementsChanged {
             previousItem?.tearDown()
@@ -585,7 +585,7 @@ extension BLTNItemManager {
             }
 
             for arrangedSubview in newArrangedSubviews {
-                bulletinController.contentStackView.addArrangedSubview(arrangedSubview)
+                bulletinController?.contentStackView.addArrangedSubview(arrangedSubview)
             }
 
         }
@@ -600,10 +600,10 @@ extension BLTNItemManager {
         hideSubviewsAnimationPhase.block = {
 
             if !showActivityIndicator {
-                self.bulletinController.hideActivityIndicator()
+                self.bulletinController?.hideActivityIndicator()
             }
 
-            for arrangedSubview in oldArrangedSubviews {
+            for arrangedSubview in oldArrangedSubviews ?? [] {
                 arrangedSubview.alpha = 0
             }
 
@@ -636,10 +636,10 @@ extension BLTNItemManager {
         finalAnimationPhase.block = {
 
             let currentElements = elementsChanged ? newArrangedSubviews : oldArrangedSubviews
-            self.bulletinController.contentStackView.alpha = contentAlpha
-            self.bulletinController.updateCloseButton(isRequired: self.needsCloseButton && !showActivityIndicator)
+            self.bulletinController?.contentStackView.alpha = contentAlpha
+            self.bulletinController?.updateCloseButton(isRequired: self.needsCloseButton && !showActivityIndicator)
 
-            for arrangedSubview in currentElements {
+            for arrangedSubview in currentElements ?? [] {
                 arrangedSubview.alpha = contentAlpha
             }
 
@@ -647,14 +647,14 @@ extension BLTNItemManager {
 
         finalAnimationPhase.completionHandler = {
 
-            self.bulletinController.isDismissable = self.currentItem.isDismissable && (showActivityIndicator == false)
+            self.bulletinController?.isDismissable = self.currentItem.isDismissable && (showActivityIndicator == false)
 
             if elementsChanged {
 
                 self.currentItem.onDisplay()
 
-                for arrangedSubview in oldArrangedSubviews {
-                    self.bulletinController.contentStackView.removeArrangedSubview(arrangedSubview)
+                for arrangedSubview in oldArrangedSubviews ?? [] {
+                    self.bulletinController?.contentStackView.removeArrangedSubview(arrangedSubview)
                     arrangedSubview.removeFromSuperview()
                 }
 
@@ -670,7 +670,7 @@ extension BLTNItemManager {
             transitionAnimationChain.add(hideSubviewsAnimationPhase)
             transitionAnimationChain.add(displayNewItemsAnimationPhase)
         } else {
-            bulletinController.hideActivityIndicator()
+            bulletinController?.hideActivityIndicator()
         }
 
         transitionAnimationChain.add(finalAnimationPhase)
