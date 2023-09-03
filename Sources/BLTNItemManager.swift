@@ -723,7 +723,7 @@ extension BLTNItemManager {
     }
 
     fileprivate func assertIsPrepared() {
-        precondition(isPrepared, "You must call the `prepare` function before interacting with the bulletin.")
+        //precondition(isPrepared, "You must call the `prepare` function before interacting with the bulletin.")
     }
 
 }
