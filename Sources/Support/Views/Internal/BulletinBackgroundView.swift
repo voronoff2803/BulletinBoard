@@ -107,8 +107,8 @@ class BulletinBackgroundView: UIView {
 
     /// Shows the background view. Animatable.
     func show() {
-
-        switch contentView! {
+        guard let contentView = contentView else { return }
+        switch contentView {
         case .dim(let dimmingView, let maxAlpha):
             dimmingView.alpha = maxAlpha
 
@@ -120,8 +120,8 @@ class BulletinBackgroundView: UIView {
 
     /// Hides the background view. Animatable.
     func hide() {
-
-        switch contentView! {
+        guard let contentView = contentView else { return }
+        switch contentView {
         case .dim(let dimmingView, _):
             dimmingView.alpha = 0
 

@@ -498,7 +498,7 @@ extension BLTNItemManager {
     @objc(dismissBulletinAnimated:)
     public func dismissBulletin(animated: Bool = true) {
 
-        assertIsPrepared()
+        guard isPrepared else { return }
         assertIsMainThread()
 
         currentItem.tearDown()
